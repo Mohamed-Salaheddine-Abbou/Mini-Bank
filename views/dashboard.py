@@ -30,8 +30,6 @@ class DashboardView(QWidget):
 
         self.update_balance()
         self.is_blinking_on = False
-        self.notif_on_icon = None
-        self.notif_off_icon = None
 
         self.blink_timer = QTimer(self)
 
@@ -105,6 +103,16 @@ class DashboardView(QWidget):
         grid = QGridLayout()
         grid.setSpacing(20)
         
+        
+        # Initialize notification icon paths and QIcon objects
+        self.notif_on_icon_path = os.path.join(os.path.dirname(__file__), 'assets', 'icons', 'notification on.svg')
+        self.notif_off_icon_path = os.path.join(os.path.dirname(__file__), 'assets', 'icons', 'notification off.svg')
+        
+        if os.path.exists(self.notif_off_icon_path):
+            self.notif_off_icon = QIcon(self.notif_off_icon_path)
+        if os.path.exists(self.notif_on_icon_path):
+            self.notif_on_icon = QIcon(self.notif_on_icon_path)
+
         def create_action_btn(text, icon_file, callback):
             btn = QToolButton()
             btn.setText(text)
@@ -115,14 +123,12 @@ class DashboardView(QWidget):
                 btn.setIconSize(QSize(48, 48))
             btn.clicked.connect(callback)
             btn.setCursor(Qt.PointingHandCursor)
+            
             if text == "Notifications":
-                self.notif_on_icon_path = os.path.join(os.path.dirname(__file__), 'assets', 'icons', 'notification on.svg')
-                self.notif_off_icon_path = os.path.join(os.path.dirname(__file__), 'assets', 'icons', 'notification off.svg')
-                if os.path.exists(self.notif_off_icon_path):
-                    self.notif_off_icon = QIcon(self.notif_off_icon_path)
+                # Ensure the initial icon is set correctly if not handled by init_ui
+                if self.notif_off_icon:
                     btn.setIcon(self.notif_off_icon)
-                if os.path.exists(self.notif_on_icon_path):
-                    self.notif_on_icon = QIcon(self.notif_on_icon_path)
+
 
             btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             btn.setStyleSheet("""
