@@ -111,3 +111,6 @@ class CreateAccountView(QWidget):
         QMessageBox.information(self, "Success", msg)
         self.name_entry.clear()
         self.phone_suffix.clear()
+        
+        if self.on_back:
+            self.on_back()

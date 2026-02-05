@@ -1,5 +1,7 @@
 import sys
+import os
 from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtGui import QIcon
 from views.admin_login import AdminLoginView
 from views.admin_dashboard import AdminDashboardView
 
@@ -8,6 +10,11 @@ class AdminApp(QMainWindow):
         super().__init__()
         self.setWindowTitle("MiniBank Admin Panel")
         self.resize(900, 600)
+        
+        icon_path = os.path.join(os.path.dirname(__file__), 'views', 'assets', 'bank_logo.png')
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+            
         self.show_admin_login()
 
     def show_admin_login(self):

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QPushButton, QLabel, QFrame, QHBoxLayout
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap, QIcon
 from PySide6.QtCore import Qt
 import os
 from views.login import LoginView
@@ -11,66 +11,68 @@ from views.admin_dashboard import AdminDashboardView
 
 GLOBAL_STYLE = """
 QWidget {
-    background-color: #2b2b2b;
-    color: #cccccc;
-    font-family: 'Segoe UI', sans-serif;
-    font-size: 12px;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', 'Roboto', sans-serif;
+    font-size: 14px;
 }
 QLineEdit {
-    background-color: #3c3f41;
-    border: 1px solid #555555;
+    background-color: #2d2d2d;
+    border: 1px solid #3e3e3e;
     color: #ffffff;
-    padding: 3px;
-    border-radius: 2px;
+    padding: 8px;
+    border-radius: 6px;
 }
 QPushButton {
-    background-color: #3c3f41;
-    border: 1px solid #555555;
+    background-color: #333333;
+    border: 1px solid #444444;
     color: #cccccc;
-    padding: 4px 10px;
-    border-radius: 2px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
 }
 QPushButton:hover {
-    background-color: #4b4e50;
+    background-color: #444444;
+    border-color: #555555;
 }
 QPushButton:pressed {
-    background-color: #2b2b2b;
+    background-color: #222222;
 }
 QHeaderView::section {
-    background-color: #3c3f41;
+    background-color: #2d2d2d;
     color: #cccccc;
-    padding: 4px;
-    border: 1px solid #555555;
+    padding: 6px;
+    border: 1px solid #3e3e3e;
 }
 QTableWidget {
-    gridline-color: #555555;
-    background-color: #2b2b2b;
+    gridline-color: #3e3e3e;
+    background-color: #1e1e1e;
     color: #cccccc;
-    selection-background-color: #4b4e50;
+    selection-background-color: #3a3a3a;
 }
 QTabWidget::pane {
-    border: 1px solid #555555;
+    border: 1px solid #3e3e3e;
 }
 QTabBar::tab {
-    background-color: #3c3f41;
+    background-color: #2d2d2d;
     color: #cccccc;
-    padding: 5px 10px;
-    border: 1px solid #555555;
+    padding: 8px 16px;
+    border: 1px solid #3e3e3e;
     margin-right: 2px;
 }
 QTabBar::tab:selected {
-    background-color: #505355;
+    background-color: #444444;
 }
 QTextEdit {
-    background-color: #2b2b2b;
+    background-color: #1e1e1e;
     color: #cccccc;
-    border: 1px solid #555555;
+    border: 1px solid #3e3e3e;
 }
 QDialog {
-    background-color: #2b2b2b;
+    background-color: #1e1e1e;
 }
 QMessageBox {
-    background-color: #2b2b2b;
+    background-color: #1e1e1e;
     color: #cccccc;
 }
 """
@@ -81,6 +83,11 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("MiniBank - PySide6")
         self.resize(900, 600)
         self.enable_admin = enable_admin
+        
+        icon_path = os.path.join(os.path.dirname(__file__), 'assets', 'bank_logo.png')
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+            
         self.setStyleSheet(GLOBAL_STYLE)
         self.show_menu()
 
