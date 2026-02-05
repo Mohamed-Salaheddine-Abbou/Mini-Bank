@@ -5,11 +5,11 @@ __pycache__/
 
 # Virtual Environment
 venv/
-env/
+# env/
 .venv/
 
 # Environment Variables (Sensitive - DO NOT UPLOAD)
-.env
+# .env
 
 # Local Session Data
 session.json
