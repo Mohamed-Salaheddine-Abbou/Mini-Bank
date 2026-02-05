@@ -1,70 +1,173 @@
-import tkinter as tk
-from views.create_account import CreateAccountForm
-from views.dashboard import Dashboard
+from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QPushButton, QLabel, QFrame, QHBoxLayout
+from PySide6.QtGui import QPixmap
+from PySide6.QtCore import Qt
+import os
 from views.login import LoginView
+from views.create_account import CreateAccountView
+from views.dashboard import DashboardView
 from views.send_money import SendMoneyView
 from views.admin_login import AdminLoginView
-from views.admin_dashboard import AdminDashboard
+from views.admin_dashboard import AdminDashboardView
 
-class MainWindow(tk.Tk):
+GLOBAL_STYLE = """
+QWidget {
+    background-color: #2b2b2b;
+    color: #cccccc;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 12px;
+}
+QLineEdit {
+    background-color: #3c3f41;
+    border: 1px solid #555555;
+    color: #ffffff;
+    padding: 3px;
+    border-radius: 2px;
+}
+QPushButton {
+    background-color: #3c3f41;
+    border: 1px solid #555555;
+    color: #cccccc;
+    padding: 4px 10px;
+    border-radius: 2px;
+}
+QPushButton:hover {
+    background-color: #4b4e50;
+}
+QPushButton:pressed {
+    background-color: #2b2b2b;
+}
+QHeaderView::section {
+    background-color: #3c3f41;
+    color: #cccccc;
+    padding: 4px;
+    border: 1px solid #555555;
+}
+QTableWidget {
+    gridline-color: #555555;
+    background-color: #2b2b2b;
+    color: #cccccc;
+    selection-background-color: #4b4e50;
+}
+QTabWidget::pane {
+    border: 1px solid #555555;
+}
+QTabBar::tab {
+    background-color: #3c3f41;
+    color: #cccccc;
+    padding: 5px 10px;
+    border: 1px solid #555555;
+    margin-right: 2px;
+}
+QTabBar::tab:selected {
+    background-color: #505355;
+}
+QTextEdit {
+    background-color: #2b2b2b;
+    color: #cccccc;
+    border: 1px solid #555555;
+}
+QDialog {
+    background-color: #2b2b2b;
+}
+QMessageBox {
+    background-color: #2b2b2b;
+    color: #cccccc;
+}
+"""
+
+class MainWindow(QMainWindow):
     def __init__(self, enable_admin=True):
         super().__init__()
-        self.title("MiniBank")
-        self.geometry("900x600")
+        self.setWindowTitle("MiniBank - PySide6")
+        self.resize(900, 600)
+        self.enable_admin = enable_admin
+        self.setStyleSheet(GLOBAL_STYLE)
+        self.show_menu()
 
-        self.menu_frame = tk.Frame(self)
-
-        tk.Button(self.menu_frame, text="Create Account", command=self.show_create_account).grid(row=0, column=0, padx=10)
-        tk.Button(self.menu_frame, text="Login", command=self.show_login).grid(row=0, column=1, padx=10)
+    def show_menu(self):
+        widget = QWidget()
+        main_layout = QHBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
         
-        if enable_admin:
-            tk.Button(self.menu_frame, text="Admin", command=self.show_admin_login).grid(row=0, column=2, padx=10)
+        # --- Left Side (Menu) ---
+        left_widget = QWidget()
+        left_layout = QVBoxLayout(left_widget)
+        left_layout.setContentsMargins(40, 40, 40, 40)
+        left_layout.addStretch()
 
-        self.current_frame = None
+        container = QWidget()
+        container.setFixedWidth(350)
+        
+        layout = QVBoxLayout(container)
+        layout.setSpacing(15)
 
-        self.show_create_account()
+        title = QLabel("MiniBank System")
+        title.setAlignment(Qt.AlignLeft)
+        title.setStyleSheet("font-size: 24px; font-weight: bold; margin-bottom: 20px;")
+        layout.addWidget(title)
 
-    def show_create_account(self):
-        if self.current_frame:
-            self.current_frame.destroy()
-        self.menu_frame.pack(pady=20)
-        self.current_frame = CreateAccountForm(self)
-        self.current_frame.pack()
+        btn_login = QPushButton("Login")
+        btn_login.clicked.connect(self.show_login)
+        btn_login.setMinimumHeight(40)
+        
+        btn_create = QPushButton("Create Account")
+        btn_create.clicked.connect(self.show_create_account)
+        btn_create.setMinimumHeight(40)
+        
+        layout.addWidget(btn_login)
+        layout.addWidget(btn_create)
+
+        if self.enable_admin:
+            btn_admin = QPushButton("Admin Panel")
+            btn_admin.clicked.connect(self.show_admin_login)
+            btn_admin.setMinimumHeight(40)
+            layout.addWidget(btn_admin)
+        
+        left_layout.addWidget(container, 0, Qt.AlignCenter)
+        left_layout.addStretch()
+        
+        # --- Right Side (Logo) ---
+        right_widget = QWidget()
+        right_layout = QVBoxLayout(right_widget)
+        right_layout.setAlignment(Qt.AlignCenter)
+
+        logo_path = os.path.join(os.path.dirname(__file__), 'assets', 'logo.svg')
+        if os.path.exists(logo_path):
+            logo_label = QLabel()
+            pixmap = QPixmap(logo_path)
+            pixmap = pixmap.scaled(450, 450, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            logo_label.setPixmap(pixmap)
+            logo_label.setAlignment(Qt.AlignCenter)
+            right_layout.addWidget(logo_label)
+
+        main_layout.addWidget(left_widget, 1)
+        main_layout.addWidget(right_widget, 1)
+        
+        widget.setLayout(main_layout)
+        self.setCentralWidget(widget)
 
     def show_login(self):
-        if self.current_frame:
-            self.current_frame.destroy()
-        self.menu_frame.pack(pady=20)
-        self.current_frame = LoginView(self, on_login_success=self.show_dashboard)
-        self.current_frame.pack()
+        self.setCentralWidget(LoginView(on_login_success=self.show_dashboard, on_back=self.show_menu))
 
-    def show_admin_login(self):
-        if self.current_frame:
-            self.current_frame.destroy()
-        self.menu_frame.pack(pady=20)
-        self.current_frame = AdminLoginView(self, on_success=self.show_admin_dashboard)
-        self.current_frame.pack()
-
-    def show_admin_dashboard(self):
-        self.menu_frame.pack_forget()
-        if self.current_frame:
-            self.current_frame.destroy()
-        self.current_frame = AdminDashboard(self)
-        self.current_frame.pack()
+    def show_create_account(self):
+        self.setCentralWidget(CreateAccountView(on_back=self.show_menu))
 
     def show_dashboard(self, user_id):
-        self.menu_frame.pack_forget()
-        if self.current_frame:
-            self.current_frame.destroy()
-        self.current_frame = Dashboard(self, user_id)
-        self.current_frame.pack()
+        self.setCentralWidget(DashboardView(
+            user_id=user_id, 
+            on_logout=self.show_menu,
+            on_send_money=self.show_send_money
+        ))
 
     def show_send_money(self, user_id):
-        if self.current_frame:
-            self.current_frame.destroy()
-        self.current_frame = SendMoneyView(self, user_id, on_back=lambda: self.show_dashboard(user_id))
-        self.current_frame.pack()
+        self.setCentralWidget(SendMoneyView(
+            user_id=user_id, 
+            on_back=lambda: self.show_dashboard(user_id)
+        ))
 
-if __name__ == "__main__":
-    app = MainWindow()
-    app.mainloop()
+    def show_admin_login(self):
+        self.setCentralWidget(AdminLoginView(on_success=self.show_admin_dashboard))
+
+    def show_admin_dashboard(self):
+        self.setCentralWidget(AdminDashboardView(on_logout=self.show_menu))

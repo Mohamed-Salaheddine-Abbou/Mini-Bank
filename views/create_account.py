@@ -1,61 +1,113 @@
-import tkinter as tk
-from tkinter import messagebox
+from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QMessageBox, QHBoxLayout, QComboBox
+from PySide6.QtGui import QPixmap, QIcon
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from PySide6.QtCore import Qt, QSize
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from controllers.account_controller import open_account
 from utils.validators import is_valid_algerian_phone
 
+class CreateAccountView(QWidget):
+    def __init__(self, parent=None, on_back=None):
+        super().__init__(parent)
+        self.on_back = on_back
+        self.init_ui()
 
-class CreateAccountForm(tk.Frame):
-    def __init__(self, master):
-        super().__init__(master)
-        self.master = master
-        self.pack()
+    def init_ui(self):
+        main_layout = QHBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
 
-        # Full Name
-        tk.Label(self, text="Full Name:").grid(row=0, column=0, sticky="w")
-        self.full_name_entry = tk.Entry(self)
-        self.full_name_entry.grid(row=0, column=1)
+        # --- Left Side (Form) ---
+        left_widget = QWidget()
+        left_layout = QVBoxLayout(left_widget)
+        left_layout.setContentsMargins(40, 40, 40, 40)
 
-        # Phone Number
-        tk.Label(self, text="Phone (Algerian):").grid(row=1, column=0, sticky="w")
-        self.phone_entry = tk.Entry(self)
-        self.phone_entry.grid(row=1, column=1)
+        if self.on_back:
+            top_bar = QHBoxLayout()
+            arrow_path = os.path.join(os.path.dirname(__file__), 'assets', 'arrow.svg')
+            back_btn = QPushButton()
+            if os.path.exists(arrow_path):
+                back_btn.setIcon(QIcon(arrow_path))
+                back_btn.setIconSize(QSize(24, 24))
+                back_btn.setStyleSheet("background-color: transparent; border: none;")
+                back_btn.setFixedWidth(50)
+            else:
+                back_btn.setText("Back")
+            back_btn.setCursor(Qt.PointingHandCursor)
+            back_btn.clicked.connect(self.on_back)
+            top_bar.addWidget(back_btn)
+            top_bar.addStretch()
+            left_layout.addLayout(top_bar)
 
-        # Create Account Button
-        self.create_button = tk.Button(self, text="Create Account", command=self.create_account)
-        self.create_button.grid(row=2, column=0, columnspan=2, pady=10)
+        left_layout.addStretch()
+
+        container = QWidget()
+        container.setFixedWidth(350)
+
+        layout = QVBoxLayout(container)
+        layout.setSpacing(15)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        title = QLabel("Create New Account")
+        title.setStyleSheet("font-size: 24px; font-weight: bold; margin-bottom: 10px;")
+        title.setAlignment(Qt.AlignLeft)
+        layout.addWidget(title)
+
+        layout.addWidget(QLabel("Full Name"))
+        self.name_entry = QLineEdit()
+        layout.addWidget(self.name_entry)
+        
+        layout.addWidget(QLabel("Phone (Algerian)"))
+        phone_layout = QHBoxLayout()
+        self.phone_prefix = QComboBox()
+        self.phone_prefix.addItems(["05", "06", "07"])
+        self.phone_suffix = QLineEdit()
+        phone_layout.addWidget(self.phone_prefix)
+        phone_layout.addWidget(self.phone_suffix)
+        layout.addLayout(phone_layout)
+
+        self.create_btn = QPushButton("Create Account")
+        self.create_btn.clicked.connect(self.create_account)
+        self.create_btn.setMinimumHeight(40)
+        layout.addWidget(self.create_btn)
+
+        left_layout.addWidget(container, 0, Qt.AlignCenter)
+        left_layout.addStretch()
+
+        # --- Right Side (Logo) ---
+        right_widget = QWidget()
+        right_layout = QVBoxLayout(right_widget)
+        right_layout.setAlignment(Qt.AlignCenter)
+
+        logo_path = os.path.join(os.path.dirname(__file__), 'assets', 'logo.svg')
+        if os.path.exists(logo_path):
+            logo_label = QLabel()
+            pixmap = QPixmap(logo_path)
+            pixmap = pixmap.scaled(450, 450, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            logo_label.setPixmap(pixmap)
+            logo_label.setAlignment(Qt.AlignCenter)
+            right_layout.addWidget(logo_label)
+
+        main_layout.addWidget(left_widget, 1)
+        main_layout.addWidget(right_widget, 1)
+        self.setLayout(main_layout)
 
     def create_account(self):
-        full_name = self.full_name_entry.get().strip()
-        phone = self.phone_entry.get().strip()
+        full_name = self.name_entry.text().strip()
+        phone = self.phone_prefix.currentText() + self.phone_suffix.text().strip()
 
         if not full_name or not phone:
-            messagebox.showerror("Error", "Please fill all fields")
-            return
-
-        if not is_valid_algerian_phone(phone):
-            messagebox.showerror("Error", "Invalid Algerian phone number")
+            QMessageBox.warning(self, "Error", "Please fill all fields")
             return
 
         data, error = open_account(full_name, phone)
         if error:
-            messagebox.showerror("Error", error)
+            QMessageBox.critical(self, "Error", error)
             return
 
-        # Account details "only once"
         msg = f"Your account has been created!\n\nAccount Number: {data['account_number']}\nPassword: {data['password']}\n\nPlease save these details now."
-        messagebox.showinfo("Account Created", msg)
-
-        # Clear after confirmation
-        self.full_name_entry.delete(0, tk.END)
-        self.phone_entry.delete(0, tk.END)
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    root.title("MiniBank - Create Account")
-    app = CreateAccountForm(master=root)
-    app.mainloop()
+        QMessageBox.information(self, "Success", msg)
+        self.name_entry.clear()
+        self.phone_suffix.clear()

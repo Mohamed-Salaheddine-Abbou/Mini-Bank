@@ -1,55 +1,63 @@
-import tkinter as tk
-from tkinter import messagebox
+from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QMessageBox
+import sys
+import os
+from PySide6.QtCore import Qt
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from controllers.transaction_controller import send_money
 
-class SendMoneyView(tk.Frame):
-    def __init__(self, master, user_id, on_back):
-        super().__init__(master)
+class SendMoneyView(QWidget):
+    def __init__(self, parent=None, user_id=None, on_back=None):
+        super().__init__(parent)
         self.user_id = user_id
         self.on_back = on_back
-        self.pack(fill=tk.BOTH, expand=True)
+        self.init_ui()
 
-        # Main container for centering
-        container = tk.Frame(self)
-        container.place(relx=0.5, rely=0.5, anchor="center")
+    def init_ui(self):
+        main_layout = QVBoxLayout()
 
-        # tk.Label(container, text="Send Money", font=("Arial", 18, "bold")).pack(pady=30)
+        container = QWidget()
+        container.setFixedWidth(300)
 
-        form_frame = tk.Frame(container)
-        form_frame.pack(pady=10)
+        layout = QVBoxLayout(container)
+        layout.setSpacing(10)
+        layout.setContentsMargins(0, 0, 0, 0)
 
-        tk.Label(form_frame, text="Receiver Account Number:", font=("Arial", 12)).grid(row=0, column=0, sticky="w", padx=10, pady=15)
-        self.receiver_entry = tk.Entry(form_frame, font=("Arial", 12), width=25)
-        self.receiver_entry.grid(row=0, column=1, padx=10, pady=10)
+        title = QLabel("Send Money")
+        title.setStyleSheet("font-size: 18px; font-weight: bold; margin-bottom: 10px;")
+        title.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title)
 
-        tk.Label(form_frame, text="Amount (DA):", font=("Arial", 12)).grid(row=1, column=0, sticky="w", padx=10, pady=10)
-        self.amount_entry = tk.Entry(form_frame, font=("Arial", 12), width=25)
-        self.amount_entry.grid(row=1, column=1, padx=10, pady=10)
+        layout.addWidget(QLabel("Receiver Account Number"))
+        self.receiver_entry = QLineEdit()
+        layout.addWidget(self.receiver_entry)
+        
+        layout.addWidget(QLabel("Amount (DA)"))
+        self.amount_entry = QLineEdit()
+        layout.addWidget(self.amount_entry)
 
-        btn_frame = tk.Frame(container)
-        btn_frame.pack(pady=30)
+        send_btn = QPushButton("Send Money")
+        send_btn.clicked.connect(self.handle_send)
+        layout.addWidget(send_btn)
 
-        tk.Button(btn_frame, text="Send", command=self.handle_send, font=("Arial", 12), width=15, bg="#4CAF50", fg="white").grid(row=0, column=0, padx=20)
-        tk.Button(btn_frame, text="Back", command=self.on_back, font=("Arial", 12), width=15).grid(row=0, column=1, padx=20)
+        back_btn = QPushButton("Back")
+        back_btn.clicked.connect(self.on_back)
+        layout.addWidget(back_btn)
+
+        main_layout.addWidget(container, 0, Qt.AlignCenter)
+        self.setLayout(main_layout)
 
     def handle_send(self):
-        receiver = self.receiver_entry.get().strip()
-        amount_str = self.amount_entry.get().strip()
+        receiver = self.receiver_entry.text().strip()
+        amount_str = self.amount_entry.text().strip()
 
-        if not receiver:
-            messagebox.showerror("Error", "Please enter receiver account number")
-            return
-        
-        if not amount_str or not amount_str.replace('.', '', 1).isdigit():
-            messagebox.showerror("Error", "Invalid amount")
-            return
-            
-        amount = float(amount_str)
-        
-        success, msg = send_money(self.user_id, receiver, amount)
-        
-        if success:
-            messagebox.showinfo("Success", msg)
-            self.on_back()
-        else:
-            messagebox.showerror("Error", msg)
+        try:
+            amount = float(amount_str)
+            success, msg = send_money(self.user_id, receiver, amount)
+            if success:
+                QMessageBox.information(self, "Success", msg)
+                self.on_back()
+            else:
+                QMessageBox.critical(self, "Error", msg)
+        except ValueError:
+            QMessageBox.warning(self, "Error", "Invalid amount")

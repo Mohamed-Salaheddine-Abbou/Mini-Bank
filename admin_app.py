@@ -1,27 +1,23 @@
-import tkinter as tk
+import sys
+from PySide6.QtWidgets import QApplication, QMainWindow
 from views.admin_login import AdminLoginView
-from views.admin_dashboard import AdminDashboard
+from views.admin_dashboard import AdminDashboardView
 
-class AdminApp(tk.Tk):
+class AdminApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.title("MiniBank Admin Panel")
-        self.geometry("900x600")
-        self.current_frame = None
+        self.setWindowTitle("MiniBank Admin Panel")
+        self.resize(900, 600)
         self.show_admin_login()
 
     def show_admin_login(self):
-        if self.current_frame:
-            self.current_frame.destroy()
-        self.current_frame = AdminLoginView(self, on_success=self.show_admin_dashboard)
-        self.current_frame.pack(fill=tk.BOTH, expand=True)
+        self.setCentralWidget(AdminLoginView(on_success=self.show_admin_dashboard))
 
     def show_admin_dashboard(self):
-        if self.current_frame:
-            self.current_frame.destroy()
-        self.current_frame = AdminDashboard(self)
-        self.current_frame.pack(fill=tk.BOTH, expand=True)
+        self.setCentralWidget(AdminDashboardView(on_logout=self.show_admin_login))
 
 if __name__ == "__main__":
-    app = AdminApp()
-    app.mainloop()
+    app = QApplication(sys.argv)
+    window = AdminApp()
+    window.show()
+    sys.exit(app.exec())
