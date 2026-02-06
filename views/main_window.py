@@ -106,7 +106,7 @@ class MainWindow(QMainWindow):
         ))
 
     def show_admin_login(self):
-        self.setCentralWidget(AdminLoginView(on_success=self.show_admin_dashboard))
+        self.setCentralWidget(AdminLoginView(on_success=self.show_admin_dashboard, on_back=self.show_menu))
 
     def show_admin_dashboard(self):
         self.setCentralWidget(AdminDashboardView(on_logout=self.show_menu))
