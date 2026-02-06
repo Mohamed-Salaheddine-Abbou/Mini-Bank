@@ -25,8 +25,13 @@ def add_new_admin(username, password):
 def remove_admin(admin_id):
     return delete_admin(admin_id)
 
-def fetch_global_transactions():
-    return get_all_transactions_global()
+def fetch_global_transactions(transaction_type=None):
+    return get_all_transactions_global(transaction_type)
 
 def remove_transaction(tx_id):
     return delete_transaction(tx_id)
+
+from models.transaction_model import get_user_transactions_with_counterparty # New import
+
+def fetch_user_transactions_with_counterparty(user_id):
+    return get_user_transactions_with_counterparty(user_id)

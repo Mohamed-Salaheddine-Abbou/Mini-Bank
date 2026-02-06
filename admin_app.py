@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtGui import QIcon
 from views.admin_login import AdminLoginView
 from views.admin_dashboard import AdminDashboardView
+from utils.styles import LIGHT_STYLE
 
 class AdminApp(QMainWindow):
     def __init__(self):
@@ -15,6 +16,7 @@ class AdminApp(QMainWindow):
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
             
+        self.setStyleSheet(LIGHT_STYLE)
         self.show_admin_login()
 
     def show_admin_login(self):

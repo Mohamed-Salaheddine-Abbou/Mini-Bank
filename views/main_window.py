@@ -9,73 +9,7 @@ from views.send_money import SendMoneyView
 from views.admin_login import AdminLoginView
 from views.admin_dashboard import AdminDashboardView
 
-GLOBAL_STYLE = """
-QWidget {
-    background-color: #1e1e1e;
-    color: #e0e0e0;
-    font-family: 'Segoe UI', 'Roboto', sans-serif;
-    font-size: 14px;
-}
-QLineEdit {
-    background-color: #2d2d2d;
-    border: 1px solid #3e3e3e;
-    color: #ffffff;
-    padding: 8px;
-    border-radius: 6px;
-}
-QPushButton {
-    background-color: #333333;
-    border: 1px solid #444444;
-    color: #cccccc;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 600;
-}
-QPushButton:hover {
-    background-color: #444444;
-    border-color: #555555;
-}
-QPushButton:pressed {
-    background-color: #222222;
-}
-QHeaderView::section {
-    background-color: #2d2d2d;
-    color: #cccccc;
-    padding: 6px;
-    border: 1px solid #3e3e3e;
-}
-QTableWidget {
-    gridline-color: #3e3e3e;
-    background-color: #1e1e1e;
-    color: #cccccc;
-    selection-background-color: #3a3a3a;
-}
-QTabWidget::pane {
-    border: 1px solid #3e3e3e;
-}
-QTabBar::tab {
-    background-color: #2d2d2d;
-    color: #cccccc;
-    padding: 8px 16px;
-    border: 1px solid #3e3e3e;
-    margin-right: 2px;
-}
-QTabBar::tab:selected {
-    background-color: #444444;
-}
-QTextEdit {
-    background-color: #1e1e1e;
-    color: #cccccc;
-    border: 1px solid #3e3e3e;
-}
-QDialog {
-    background-color: #1e1e1e;
-}
-QMessageBox {
-    background-color: #1e1e1e;
-    color: #cccccc;
-}
-"""
+from utils.styles import LIGHT_STYLE
 
 class MainWindow(QMainWindow):
     def __init__(self, enable_admin=True):
@@ -88,7 +22,7 @@ class MainWindow(QMainWindow):
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
             
-        self.setStyleSheet(GLOBAL_STYLE)
+        self.setStyleSheet(LIGHT_STYLE)
         self.show_menu()
 
     def show_menu(self):
@@ -97,7 +31,6 @@ class MainWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
         
-        # --- Left Side (Menu) ---
         left_widget = QWidget()
         left_layout = QVBoxLayout(left_widget)
         left_layout.setContentsMargins(40, 40, 40, 40)
@@ -134,7 +67,6 @@ class MainWindow(QMainWindow):
         left_layout.addWidget(container, 0, Qt.AlignCenter)
         left_layout.addStretch()
         
-        # --- Right Side (Logo) ---
         right_widget = QWidget()
         right_layout = QVBoxLayout(right_widget)
         right_layout.setAlignment(Qt.AlignCenter)

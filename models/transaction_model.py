@@ -1,5 +1,3 @@
-# models/transaction_model.py
-
 from config.db import get_connection
 
 def _init_transactions_table():
@@ -23,7 +21,6 @@ def _fix_transaction_type_length():
     conn = get_connection()
     cursor = conn.cursor()
     try:
-        # Increase the length of the 'type' column to handle longer strings like 'TRANSFER_RECEIVED'
         cursor.execute("ALTER TABLE transactions MODIFY COLUMN type VARCHAR(50)")
         conn.commit()
     except Exception:
@@ -134,7 +131,7 @@ def transfer_funds(sender_id, receiver_id, amount, sender_name):
         cursor.close()
         conn.close()
 
-def get_all_transactions_global():
+def get_all_transactions_global(transaction_type=None):
     conn = get_connection()
     cursor = conn.cursor()
   
@@ -142,13 +139,75 @@ def get_all_transactions_global():
         SELECT t.id, u.full_name, t.type, t.amount, t.created_at 
         FROM transactions t
         JOIN users u ON t.user_id = u.id
-        ORDER BY t.created_at DESC
     """
-    cursor.execute(sql)
+    params = []
+    if transaction_type and transaction_type != "All":
+        sql += " WHERE t.type = %s"
+        params.append(transaction_type.upper()) # Assuming types are stored in uppercase
+
+    sql += " ORDER BY t.created_at DESC"
+    cursor.execute(sql, params)
     rows = cursor.fetchall()
     cursor.close()
     conn.close()
     return rows
+
+def get_user_transactions_with_counterparty(user_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    transactions_with_counterparty = []
+
+    # Get all transactions for the user
+    cursor.execute("""
+        SELECT id, type, amount, created_at
+        FROM transactions
+        WHERE user_id = %s
+        ORDER BY created_at DESC
+    """, (user_id,))
+    user_transactions = cursor.fetchall()
+
+    for tx_id, tx_type, tx_amount, tx_created_at in user_transactions:
+        counterparty_name = "N/A"
+        counterparty_account_number = "N/A"
+
+        if tx_type == "TRANSFER_SENT":
+            cursor.execute("""
+                SELECT u.full_name, u.account_number
+                FROM transactions t
+                JOIN users u ON t.user_id = u.id
+                WHERE t.type = 'TRANSFER_RECEIVED'
+                  AND t.amount = %s
+                  AND ABS(UNIX_TIMESTAMP(t.created_at) - UNIX_TIMESTAMP(%s)) < 5 -- within 5 seconds
+                  AND t.user_id != %s
+                LIMIT 1
+            """, (tx_amount, tx_created_at, user_id))
+            counterparty_info = cursor.fetchone()
+            if counterparty_info:
+                counterparty_name = counterparty_info[0]
+                counterparty_account_number = counterparty_info[1]
+        elif tx_type == "TRANSFER_RECEIVED":
+            # Find the corresponding TRANSFER_SENT transaction
+            cursor.execute("""
+                SELECT u.full_name, u.account_number
+                FROM transactions t
+                JOIN users u ON t.user_id = u.id
+                WHERE t.type = 'TRANSFER_SENT'
+                  AND t.amount = %s
+                  AND ABS(UNIX_TIMESTAMP(t.created_at) - UNIX_TIMESTAMP(%s)) < 5 -- within 5 seconds
+                  AND t.user_id != %s
+                LIMIT 1
+            """, (tx_amount, tx_created_at, user_id))
+            counterparty_info = cursor.fetchone()
+            if counterparty_info:
+                counterparty_name = counterparty_info[0]
+                counterparty_account_number = counterparty_info[1]
+        
+        transactions_with_counterparty.append((tx_id, tx_type, tx_amount, tx_created_at, counterparty_name, counterparty_account_number))
+
+    cursor.close()
+    conn.close()
+    return transactions_with_counterparty
 
 def delete_transaction(tx_id):
     conn = get_connection()

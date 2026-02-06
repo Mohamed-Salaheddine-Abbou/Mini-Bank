@@ -18,7 +18,6 @@ class AdminLoginView(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # --- Left Side (Form) ---
         left_widget = QWidget()
         left_layout = QVBoxLayout(left_widget)
         left_layout.setContentsMargins(40, 40, 40, 40)
@@ -55,12 +54,12 @@ class AdminLoginView(QWidget):
         left_layout.addWidget(container, 0, Qt.AlignCenter)
         left_layout.addStretch()
 
-        # --- Right Side (Logo) ---
+      
         right_widget = QWidget()
         right_layout = QVBoxLayout(right_widget)
         right_layout.setAlignment(Qt.AlignCenter)
 
-        logo_path = os.path.join(os.path.dirname(__file__), 'assets', 'logo.svg')
+        logo_path = os.path.join(os.path.dirname(__file__), 'assets', 'logo admin.svg')
         if os.path.exists(logo_path):
             logo_label = QLabel()
             pixmap = QPixmap(logo_path)
