@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QMessageBox, QHBoxLayout, QComboBox
-from PySide6.QtGui import QPixmap, QIcon
+from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QMessageBox, QHBoxLayout, QComboBox, QFileDialog
+from PySide6.QtGui import QPixmap, QIcon, QGuiApplication
 import sys
 import os
 from PySide6.QtCore import Qt, QSize
@@ -95,6 +95,7 @@ class CreateAccountView(QWidget):
         self.setLayout(main_layout)
 
     def create_account(self):
+   
         full_name = self.name_entry.text().strip()
         phone = self.phone_prefix.currentText() + self.phone_suffix.text().strip()
 
@@ -107,10 +108,50 @@ class CreateAccountView(QWidget):
             QMessageBox.critical(self, "Error", error)
             return
 
-        msg = f"Your account has been created!\n\nAccount Number: {data['account_number']}\nPassword: {data['password']}\n\nPlease save these details now."
-        QMessageBox.information(self, "Success", msg)
+        msg = (
+            "Your account has been created!\n\n"
+            f"Account Number: {data['account_number']}\n"
+            f"Password: {data['password']}\n\n"
+            "Please save these details now."
+        )
+
+        while True:  # Keep showing until OK is clicked
+            box = QMessageBox(self)
+            box.setWindowTitle("Success")
+            box.setText("Account created successfully")
+            box.setInformativeText(msg)
+            box.setIcon(QMessageBox.Information)
+
+            ok_btn = box.addButton("OK", QMessageBox.AcceptRole)
+            copy_btn = box.addButton("Copy", QMessageBox.ActionRole)
+            download_btn = box.addButton("Download", QMessageBox.ActionRole)
+
+            box.exec()
+            
+            clicked = box.clickedButton()
+            
+            if clicked == copy_btn:
+                QGuiApplication.clipboard().setText(msg)
+                # Loop continues, dialog will reappear
+                
+            elif clicked == download_btn:
+                file_path, _ = QFileDialog.getSaveFileName(
+                    self,
+                    "Save Account Details",
+                    "account_details.txt",
+                    "Text Files (*.txt)"
+                )
+                if file_path:
+                    with open(file_path, "w", encoding="utf-8") as f:
+                        f.write(msg)
+                # Loop continues, dialog will reappear
+                
+            else:  # OK button clicked
+                break  # Exit the loop
+
         self.name_entry.clear()
         self.phone_suffix.clear()
-        
+
         if self.on_back:
             self.on_back()
+

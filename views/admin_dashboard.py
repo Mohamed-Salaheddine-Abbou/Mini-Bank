@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QTabWidget, QTableWidget, 
-                               QTableWidgetItem, QPushButton, QHBoxLayout, QLabel, QMessageBox, QHeaderView, QComboBox, QDialog)
+                               QTableWidgetItem, QPushButton, QAbstractItemView, QHBoxLayout, QLabel, QMessageBox, QHeaderView, QComboBox, QDialog)
 import sys
 import os
 from PySide6.QtCore import Qt
@@ -66,6 +66,7 @@ class AdminDashboardView(QWidget):
         layout = QVBoxLayout()
         
         self.users_table = QTableWidget()
+        self.users_table.setFocusPolicy(Qt.NoFocus)
         self.users_table.setColumnCount(5)
         self.users_table.setHorizontalHeaderLabels(["ID", "Name", "Phone", "Account", "Balance"])
         self.users_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -82,7 +83,7 @@ class AdminDashboardView(QWidget):
         
         view_transactions_btn = QPushButton("View Transactions") # New button
         view_transactions_btn.clicked.connect(self.view_user_transactions)
-        view_transactions_btn.setFixedWidth(140)
+        view_transactions_btn.setFixedWidth(160)
         button_layout.addWidget(view_transactions_btn)
 
         delete_btn = QPushButton("Delete User")
@@ -97,14 +98,23 @@ class AdminDashboardView(QWidget):
         self.load_users()
 
     def load_users(self):
+        
         users = fetch_all_users()
         self.users_table.setRowCount(len(users))
+
         for i, user in enumerate(users):
             for j, val in enumerate(user):
                 item = QTableWidgetItem(str(val))
-                item.setTextAlignment(Qt.AlignCenter) # Center align text in cells
+                item.setTextAlignment(Qt.AlignCenter)
+
+                # Allow editing ONLY Name (1) and Phone (2)
+                if j not in (1, 2):
+                    item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+
                 self.users_table.setItem(i, j, item)
+
         self.refresh_stats()
+
 
     def view_user_transactions(self):
         row = self.users_table.currentRow()
@@ -137,6 +147,8 @@ class AdminDashboardView(QWidget):
     def setup_admins_tab(self):
         layout = QVBoxLayout()
         self.admins_table = QTableWidget()
+        self.admins_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.admins_table.setFocusPolicy(Qt.NoFocus)
         self.admins_table.setColumnCount(2)
         self.admins_table.setHorizontalHeaderLabels(["ID", "Username"])
         self.admins_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -170,6 +182,8 @@ class AdminDashboardView(QWidget):
         layout.addLayout(filter_layout)
 
         self.trans_table = QTableWidget()
+        self.trans_table.setFocusPolicy(Qt.NoFocus)
+        self.trans_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.trans_table.setColumnCount(5)
         self.trans_table.setHorizontalHeaderLabels(["ID", "User", "Type", "Amount", "Date"])
         self.trans_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)

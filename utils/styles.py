@@ -40,6 +40,7 @@ QTableWidget {
     background-color: #1e1e1e;
     color: #cccccc;
     selection-background-color: #3a3a3a;
+    outline: 0; 
 }
 QTabWidget::pane {
     border: 1px solid #3e3e3e;
